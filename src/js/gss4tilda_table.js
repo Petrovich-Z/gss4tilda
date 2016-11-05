@@ -65,14 +65,26 @@ google.visualization.Query.setResponse = function(data)
 	
 	//Заполняем данные таблицы
 	var part2="";
+	var empty = true;
 	for(var i=0; i<data.table.rows.length; i++)
 	{
+		empty = true;
 		for(var j=0; j<data.table.rows[i].c.length; j++)
-		{
-			part2 += data.table.rows[i].c[j] !== null && typeof data.table.rows[i].c[j] === 'object' ? htmlentities(data.table.rows[i].c[j].v) + ';' : ';';
+		{			
+			if(data.table.rows[i].c[j] !== null && typeof data.table.rows[i].c[j] === 'object' && data.table.rows[i].c[j].v !== null && data.table.rows[i].c[j].v !== '')
+			{
+				part2 += htmlentities(data.table.rows[i].c[j].v) + ';'
+				empty = false;
+			}
+			else
+			{
+				part2 += ';'
+			};
+			
 		}
-		part2 = part2.slice(0,-1);
-		part2 += "\n";
+		
+		part2 = !empty ? part2.slice(0,-1) + "\n" : part2.slice(0,- data.table.rows[i].c.length);
+		//part2 += "\n";
 	}
 	part2 = part2.slice(0,-1);
 
@@ -87,7 +99,7 @@ google.visualization.Query.setResponse = function(data)
 	}
 	
 	//Переходим к следующей таблице или сбрасываем счетчик
-	if (curBlock < prms.length)
+	if (curBlock < prms.length-1)
 	{
 		curBlock++;
 		getGssData();
