@@ -52,8 +52,7 @@ t431_createTable = function (
 	t431__evenrowstyles);
 }
 
-//Callback функция для полуения данных от google в формате jsonp
-google.visualization.Query.setResponse = function(data)
+function gss4tilda_createT431 (blockID, data)
 {
 	//Заполняем заголовки таблицы
 	var part1="";
@@ -88,17 +87,83 @@ google.visualization.Query.setResponse = function(data)
 	}
 	part2 = part2.slice(0,-1);
 
-	//вызываем функцию формирования для очередной таблицы
-	var blockID = prms[curBlock].id;
+	//Очищаем блок от старых данных
 	$('#rec' + blockID + " table").html("");
+	
+	//вызываем функцию формирования для таблицы	
 	t431_createTable(blockID, part1, part2, styles['rec'+blockID].per, styles['rec'+blockID].w, styles['rec'+blockID].t431__btnstyles, styles['rec'+blockID].t431__tdstyles, styles['rec'+blockID].t431__thstyles, styles['rec'+blockID].t431__oddrowstyles, styles['rec'+blockID].t431__evenrowstyles);
 
 	//подгоняем ширину столбцов
 	if('' && $('#rec'+ blockID +' .t431 .t-container .t431__data-part2').html().length>0) {
 		setTimeout(function(){ t431_setHeadWidth(prms[curBlock].id); }, 200);
-	}
+	}	
+}
+
+function gss4tilda_createT273 (blockID, data)
+{
+	//контейнер ответов
+	var faqContainer = $("#rec"+blockID + " .t-col:first");
+	//первый элемент который будем клонировать
+	var faqElement = $("#rec"+blockID + " .t273__wrapper:first");
 	
-	//Переходим к следующей таблице или сбрасываем счетчик
+	//Заполняем блок вопросов и ответов
+	for(var i=0; i<data.table.rows.length; i++)
+	{
+		
+		/*for(var j=0; j<data.table.rows[i].c.length; j++)
+		{			
+			if(data.table.rows[i].c[j] !== null && typeof data.table.rows[i].c[j] === 'object' && data.table.rows[i].c[j].v !== null && data.table.rows[i].c[j].v !== '')
+			{
+				part2 += htmlentities(data.table.rows[i].c[j].v) + ';'
+				empty = false;
+			}
+			else
+			{
+				part2 += ';'
+			};
+			
+		}*/
+		if ( data.table.rows[i].c[0] !== null && typeof data.table.rows[i].c[0] === 'object' && data.table.rows[i].c[0].v !== null && data.table.rows[i].c[0].v !== ''
+		  && data.table.rows[i].c[1] !== null && typeof data.table.rows[i].c[1] === 'object' && data.table.rows[i].c[1].v !== null && data.table.rows[i].c[1].v !== '' 
+		  && data.table.rows[i].c[2] !== null && typeof data.table.rows[i].c[2] === 'object' && data.table.rows[i].c[2].v !== null && data.table.rows[i].c[2].v !== ''
+		  && data.table.rows[i].c[3] !== null && typeof data.table.rows[i].c[3] === 'object' && data.table.rows[i].c[3].v !== null && data.table.rows[i].c[3].v !== ''
+		)
+		{
+			//Копируем блок с вопросом и ответом
+			faqCurElement = i==0 ? faqElement : $(faqElement).clone().appendTo(faqContainer);
+			//Меняем содержимое
+			//Имя спрашивающего
+			$(faqCurElement).find(".t273__question-name:first").html( htmlentities(data.table.rows[i].c[0].v) + ":" );
+			//Вопрос
+			$(faqCurElement).find(".t273__question-text:first").html( htmlentities(data.table.rows[i].c[1].v) );
+			//Имя отвечающего
+			$(faqCurElement).find(".t273__answer-name:first").html( htmlentities(data.table.rows[i].c[2].v) + ":" );
+			//Ответ
+			$(faqCurElement).find(".t273__answer-text:first").html( htmlentities(data.table.rows[i].c[3].v) );
+		}
+	}
+}
+
+//Callback функция для полуения данных от google в формате jsonp
+google.visualization.Query.setResponse = function(data)
+{
+	//Получаем ссылку на нужный блок
+	var blockID = prms[curBlock].id;
+	var blockType = $("#rec"+blockID + " div:first").attr("class");
+
+	switch (blockType) {
+		case 't431' :
+			//table
+			gss4tilda_createT431(blockID, data);
+			break;
+		case 't273' :
+			//faq
+			gss4tilda_createT273(blockID, data);
+			break;
+	}
+
+	
+	//Переходим к следующему блоку или сбрасываем счетчик
 	if (curBlock < prms.length-1)
 	{
 		curBlock++;
